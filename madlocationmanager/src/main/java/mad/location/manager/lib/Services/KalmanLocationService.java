@@ -49,6 +49,8 @@ public class KalmanLocationService extends Service
         private int positionMinTime;
         private int geoHashPrecision;
         private int geoHashMinPointCount;
+        private int geoHashMaxPointCount;
+        private int lastGeohashIgnoreAmount;
         private double sensorFrequencyHz;
         private ILogger logger;
         private boolean filterMockGpsCoordinates;
@@ -63,6 +65,8 @@ public class KalmanLocationService extends Service
                         int positionMinTime,
                         int geoHashPrecision,
                         int geoHashMinPointCount,
+                        int geoHashMaxPointCount,
+                        int lastGeohashIgnoreAmount,
                         double sensorFrequencyHz,
                         ILogger logger,
                         boolean filterMockGpsCoordinates,
@@ -74,6 +78,8 @@ public class KalmanLocationService extends Service
             this.positionMinTime = positionMinTime;
             this.geoHashPrecision = geoHashPrecision;
             this.geoHashMinPointCount = geoHashMinPointCount;
+            this.geoHashMaxPointCount = geoHashMaxPointCount;
+            this.lastGeohashIgnoreAmount = lastGeohashIgnoreAmount;
             this.sensorFrequencyHz = sensorFrequencyHz;
             this.logger = logger;
             this.filterMockGpsCoordinates = filterMockGpsCoordinates;
@@ -197,6 +203,8 @@ public class KalmanLocationService extends Service
                     Utils.SENSOR_POSITION_MIN_TIME,
                     Utils.GEOHASH_DEFAULT_PREC,
                     Utils.GEOHASH_DEFAULT_MIN_POINT_COUNT,
+                    Utils.GEOHASH_DEFAULT_MAX_POINT_COUNT,
+                    Utils.GEOHASH_DEFAULT_LAST_GEOHASH_IGNORE,
                     Utils.SENSOR_DEFAULT_FREQ_HZ,
                     null,
                     true,
@@ -492,7 +500,7 @@ public class KalmanLocationService extends Service
         if (m_settings.geoHashPrecision != 0 &&
                 m_settings.geoHashMinPointCount != 0) {
             m_geoHashRTFilter = new GeohashRTFilter(m_settings.geoHashPrecision,
-                    m_settings.geoHashMinPointCount);
+                    m_settings.geoHashMinPointCount, m_settings.geoHashMaxPointCount, m_settings.lastGeohashIgnoreAmount);
         }
     }
 

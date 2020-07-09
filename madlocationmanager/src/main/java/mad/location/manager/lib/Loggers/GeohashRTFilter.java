@@ -10,7 +10,9 @@ import mad.location.manager.lib.Interfaces.ILogger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * Created by lezh1k on 2/13/18.
@@ -30,6 +32,7 @@ public class GeohashRTFilter {
     private int ppReadGeoHash = 1;
 
     private long geoHashBuffers[];
+    Queue<Long> lastAddedGeoHashes = new LinkedList<Long>();
     private int pointsInCurrentGeohashCount;
 
     private GeoPoint currentGeoPoint;
@@ -45,11 +48,17 @@ public class GeohashRTFilter {
     private boolean isFirstCoordinate = true;
     private int m_geohashPrecision;
     private int m_geohashMinPointCount;
+    private int m_geohashMaxPointCount;
+    private int m_lastGeohashIgnoreAmount;
 
     public GeohashRTFilter(int geohashPrecision,
-                           int geohashMinPointCount) {
+                           int geohashMinPointCount,
+                           int geohashMaxPointCount,
+                           int lastGeohashIgnoreAmount) {
         m_geohashPrecision = geohashPrecision;
         m_geohashMinPointCount = geohashMinPointCount;
+        m_geohashMaxPointCount = geohashMaxPointCount;
+        m_lastGeohashIgnoreAmount = lastGeohashIgnoreAmount;
         m_geoFilteredTrack = new ArrayList<>();
         reset(null);
     }
@@ -128,7 +137,7 @@ public class GeohashRTFilter {
 
         geoHashBuffers[ppReadGeoHash] = GeoHash.encode_u64(pi.Latitude, pi.Longitude, m_geohashPrecision);
         if (geoHashBuffers[ppCompGeoHash] != geoHashBuffers[ppReadGeoHash]) {
-            if (pointsInCurrentGeohashCount >= m_geohashMinPointCount) {
+            if (pointsInCurrentGeohashCount >= m_geohashMinPointCount && pointsInCurrentGeohashCount <= m_geohashMaxPointCount) {
                 currentGeoPoint.Latitude /= pointsInCurrentGeohashCount;
                 currentGeoPoint.Longitude /= pointsInCurrentGeohashCount;
 
@@ -155,7 +164,22 @@ public class GeohashRTFilter {
                 laLoc.setLongitude(lastApprovedGeoPoint.Longitude);
                 laLoc.setAltitude(loc.getAltitude()); //hack.
                 laLoc.setTime(loc.getTime()); //hack2
-                m_geoFilteredTrack.add(laLoc);
+
+                boolean found = false;
+                for(long geohash : lastAddedGeoHashes) {
+                    if(geohash==geoHashBuffers[ppReadGeoHash]){
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    m_geoFilteredTrack.add(laLoc);
+                    if(lastAddedGeoHashes.size()>=m_lastGeohashIgnoreAmount) {
+                        lastAddedGeoHashes.poll();
+                    }
+                    lastAddedGeoHashes.add(geoHashBuffers[ppReadGeoHash]);
+                }
+
                 currentGeoPoint.Latitude = currentGeoPoint.Longitude = 0.0;
             }
 

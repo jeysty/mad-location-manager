@@ -22,6 +22,8 @@ public class Utils {
     public static final double SENSOR_DEFAULT_FREQ_HZ = 10.0;
     public static final int GEOHASH_DEFAULT_PREC = 6;
     public static final int GEOHASH_DEFAULT_MIN_POINT_COUNT = 2;
+    public static final int GEOHASH_DEFAULT_MAX_POINT_COUNT = 10;
+    public static final int GEOHASH_DEFAULT_LAST_GEOHASH_IGNORE = 1;
     public static final double DEFAULT_VEL_FACTOR = 1.0;
     public static final double DEFAULT_POS_FACTOR = 1.0;
     //!!
